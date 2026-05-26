@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Custom animations */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes loading-bar {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+.animate-loading-bar {
+  animation: loading-bar 1s ease-out forwards;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+/* Input date styling for dark mode */
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+/* Smooth transitions */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  /* Prevent pull-to-refresh on Android */
+  overscroll-behavior-y: contain;
+}
+
+body {
+  overscroll-behavior: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  /* Prevent text selection on long press */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Smooth scrolling */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Allow text selection in input fields */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Safe area padding for notched devices and Android navigation */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Status bar area for Capacitor */
+.capacitor-status-bar {
+  height: env(safe-area-inset-top, 24px);
+  background: inherit;
+}
+
+/* Android ripple effect simulation */
+.android-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.android-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.android-ripple:active::after {
+  width: 200%;
+  height: 200%;
+  opacity: 1;
+  transition: width 0.3s, height 0.3s, opacity 0.3s;
+}
+
+/* Safe area for mobile navigation */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  header {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Capacitor specific - hide scrollbar on Android */
+.capacitor-android ::-webkit-scrollbar {
+  display: none;
+}
+
+.capacitor-android {
+  scrollbar-width: none;
+}
+
+/* Fix for Android keyboard pushing content */
+@media screen and (max-height: 500px) {
+  .keyboard-open header {
+    position: relative;
+  }
+  
+  .keyboard-open nav {
+    display: none;
+  }
+}
+
+/* Prevent zoom on input focus (iOS/Android) */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+/* Touch action optimization */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
