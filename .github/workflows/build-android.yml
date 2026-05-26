@@ -56,9 +56,20 @@ jobs:
       # 8. 同步到 Android
       - name: Sync Capacitor
         run: npx cap sync android
-
-      # 9. 设置 JDK 17
-      - name: Setup JDK 17
+      # 9. 修复 Kotlin 版本冲突
+      - name: Fix Kotlin version conflict
+        run: |
+          echo "
+          configurations.all {
+              resolutionStrategy {
+                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.22'
+              }
+          }
+          " >> android/app/build.gradle
+      # 9. 设置 JDK 21
+      - name: Setup JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -125,7 +136,7 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Setup JDK 17
+      - name: Setup JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
