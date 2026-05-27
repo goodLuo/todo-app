@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sun, Moon, Monitor, Download, Info, Bell, Trash2, BellOff } from 'lucide-react';
 import { ThemeMode, TodoItem, Category } from '../types';
+import { notificationHelper } from '../utils/notificationHelper';
 
 interface Props {
   themeMode: ThemeMode;
@@ -18,9 +19,9 @@ export default function Settings({
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
-    if ('Notification' in window) {
-      setNotificationPermission(Notification.permission);
-    }
+    notificationHelper.getPermissionStatus().then(permission => {
+      setNotificationPermission(permission);
+    });
   }, []);
 
   const themeOptions: { value: ThemeMode; label: string; icon: React.ReactNode }[] = [
@@ -47,25 +48,28 @@ export default function Settings({
       window.location.reload();
     }
   };
-
   const handleToggleNotifications = async () => {
-    if (!('Notification' in window)) {
-      alert('您的浏览器不支持通知功能');
+    const isSupported = await notificationHelper.isSupported();
+    if (!isSupported) {
+      alert('您的设备不支持通知功能');
       return;
     }
 
+    const currentPermission = await notificationHelper.getPermissionStatus();
+
     if (!notificationsEnabled) {
-      // Request permission if needed
-      if (Notification.permission === 'default') {
-        const permission = await Notification.requestPermission();
+      if (currentPermission === 'default') {
+        const permission = await notificationHelper.requestPermission();
         setNotificationPermission(permission);
         if (permission === 'granted') {
           onToggleNotifications(true);
+          await notificationHelper.sendInstantNotification('待办清单', '通知提醒已成功启用！');
         }
-      } else if (Notification.permission === 'granted') {
+      } else if (currentPermission === 'granted') {
         onToggleNotifications(true);
+        await notificationHelper.sendInstantNotification('待办清单', '通知提醒已成功启用！');
       } else {
-        alert('通知权限已被禁用，请在浏览器设置中开启');
+        alert('通知权限已被禁用，请在系统设置中开启本应用的通知权限');
       }
     } else {
       onToggleNotifications(false);

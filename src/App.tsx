@@ -11,6 +11,7 @@ import TodoForm from './components/TodoForm';
 import CategoryManager from './components/CategoryManager';
 import SettingsComponent from './components/Settings';
 import Snackbar from './components/Snackbar';
+import { notificationHelper } from './utils/notificationHelper';
 
 interface SnackbarState {
   message: string;
@@ -38,21 +39,58 @@ function App() {
   // Dark mode
   useEffect(() => {
     const root = document.documentElement;
-    if (store.themeMode === 'dark') {
-      root.classList.add('dark');
-    } else if (store.themeMode === 'light') {
-      root.classList.remove('dark');
-    } else {
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    const body = document.body;
+    
+    const applyDark = (isDark: boolean) => {
+      if (isDark) {
         root.classList.add('dark');
+        body.classList.add('dark');
       } else {
         root.classList.remove('dark');
+        body.classList.remove('dark');
       }
+    };
+
+    if (store.themeMode === 'dark') {
+      applyDark(true);
+    } else if (store.themeMode === 'light') {
+      applyDark(false);
+    } else {
+      const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyDark(isSystemDark);
     }
   }, [store.themeMode]);
-
-  // Notification reminder check
+  // 跨平台定时本地通知同步逻辑（核心用于手机端原生后台通知，支持进程杀死后提醒）
   useEffect(() => {
+    // 只有在开启通知提醒时才进行注册同步
+    if (!store.notificationsEnabled) {
+      // 如果未开启通知提醒，取消所有定时通知
+      store.todos.forEach(todo => {
+        notificationHelper.cancelNotification(todo.id);
+      });
+      return;
+    }
+
+    // 遍历所有待办，根据状态注册或取消通知
+    store.todos.forEach(todo => {
+      if (todo.isCompleted || !todo.reminderTime || todo.reminderTime <= Date.now()) {
+        // 已完成、未设定提醒、或者提醒时间已过的待办，取消通知
+        notificationHelper.cancelNotification(todo.id);
+      } else {
+        // 进行中且未来的提醒，将其注册到原生系统或模拟定时器中
+        notificationHelper.scheduleNotification(
+          todo.id,
+          '待办提醒 ⏰',
+          todo.title,
+          todo.reminderTime
+        );
+      }
+    });
+  }, [store.todos, store.notificationsEnabled]);
+
+  // 前台网页端定时通知检测（兜底方案，仅在非 Capacitor 原生环境且支持 Notification 的普通浏览器中运行）
+  useEffect(() => {
+    if (notificationHelper.isNative()) return; // 移动端直接依靠系统定时机制，不需要前台轮询
     if (!('Notification' in window)) return;
     if (!store.notificationsEnabled) return;
 
@@ -70,7 +108,6 @@ function App() {
     const interval = setInterval(checkReminders, 30000);
     return () => clearInterval(interval);
   }, [store.todos, store.notificationsEnabled]);
-
   const handleSave = (data: Parameters<typeof store.addTodo>[0]) => {
     if (editTodo) {
       store.updateTodo(editTodo.id, data);

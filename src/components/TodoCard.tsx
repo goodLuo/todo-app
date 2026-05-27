@@ -119,25 +119,32 @@ export default function TodoCard({
     <div className="relative overflow-hidden rounded-2xl mb-3 group">
       {/* Swipe background actions */}
       {!isSelectionMode && (
-        <div className="absolute inset-0 flex">
-          <div className="flex-1 bg-green-500 flex items-center pl-5">
-            <Check size={24} className="text-white" />
-            <span className="text-white text-sm ml-2 font-medium">完成</span>
-          </div>
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 pr-2">
-            <button
-              onClick={() => { onEdit(todo); setSwipeX(0); setShowActions(false); }}
-              className="p-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-            >
-              <Edit3 size={18} />
-            </button>
-            <button
-              onClick={() => { onDelete(todo.id); setSwipeX(0); setShowActions(false); }}
-              className="p-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors"
-            >
-              <Trash2 size={18} />
-            </button>
-          </div>
+        <div className="absolute inset-0 rounded-2xl overflow-hidden select-none">
+          {/* 向右滑动露出绿色“完成”背景 */}
+          {swipeX > 0 && (
+            <div className="absolute inset-y-0 left-0 w-full bg-green-500 flex items-center pl-5">
+              <Check size={24} className="text-white animate-fade-in" />
+              <span className="text-white text-sm ml-2 font-medium animate-fade-in">完成</span>
+            </div>
+          )}
+          
+          {/* 向左滑动露出右侧修改与删除按钮面板 */}
+          {swipeX < 0 && (
+            <div className="absolute inset-y-0 right-0 w-full bg-gray-100 dark:bg-gray-800 flex items-center justify-end pr-2.5 gap-1.5">
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(todo); setSwipeX(0); setShowActions(false); }}
+                className="p-3 rounded-xl bg-blue-500 text-white hover:bg-blue-600 active:scale-95 transition-all shadow-md shadow-blue-500/25 flex items-center justify-center"
+              >
+                <Edit3 size={18} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(todo.id); setSwipeX(0); setShowActions(false); }}
+                className="p-3 rounded-xl bg-red-500 text-white hover:bg-red-600 active:scale-95 transition-all shadow-md shadow-red-500/25 flex items-center justify-center"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -190,20 +197,20 @@ export default function TodoCard({
               }`}>
                 {todo.title}
               </h3>
-              {/* Desktop actions */}
+              {/* 待办快捷操作按钮：在移动触控屏上直接显示以供轻松点击，在桌面端保持悬浮 hover 显示 */}
               {!isSelectionMode && (
-                <div className="hidden sm:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                <div className="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                   <button
-                    onClick={() => onEdit(todo)}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); onEdit(todo); }}
+                    className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <Edit3 size={14} className="text-gray-400" />
+                    <Edit3 size={15} className="text-gray-400 hover:text-blue-500" />
                   </button>
                   <button
-                    onClick={() => onDelete(todo.id)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                    onClick={(e) => { e.stopPropagation(); onDelete(todo.id); }}
+                    className="p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
                   >
-                    <Trash2 size={14} className="text-gray-400 hover:text-red-500" />
+                    <Trash2 size={15} className="text-gray-400 hover:text-red-500" />
                   </button>
                 </div>
               )}

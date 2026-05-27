@@ -2,6 +2,20 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  color-scheme: light dark;
+}
+
+/* 按钮基础重置：解决移动端部分浏览器给按钮添加的原生样式或默认背景问题 */
+button {
+  background-color: transparent;
+  color: inherit;
+  border: none;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* Custom animations */
 @keyframes slide-up {
   from {
